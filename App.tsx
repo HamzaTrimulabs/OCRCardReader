@@ -1,8 +1,9 @@
 import React from 'react';
-import { MyStackNavigator } from './App/navigation';
+import AppNavigation from './App/navigation';
+import { Scan } from './App/screens';
 
 const App = () => {
-  return <MyStackNavigator />;
+  return <AppNavigation />;
 };
 
 export default App;
