@@ -1,0 +1,6 @@
+module Pods_OCR_OCRTests {
+  umbrella header "Pods-OCR-OCRTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
