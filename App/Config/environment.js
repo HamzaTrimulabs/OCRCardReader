@@ -23,7 +23,8 @@ var environments = {
   },
 };
 function getReleaseChannel() {
-  let releaseChannel = Expo.Constants.manifest.releaseChannel;
+  //let releaseChannel = Expo.Constants.manifest.releaseChannel;
+  releaseChannel = 'staging';
   if (releaseChannel === undefined) {
     return 'staging';
   } else if (releaseChannel === 'staging') {
