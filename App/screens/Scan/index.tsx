@@ -3,19 +3,28 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Environment from '../../Config/environment';
 import firebase from '../../Config/firebase';
+import { v4 as uuidv4 } from 'uuid';
 import styles from './style';
 
 const Scan = () => {
   const [imageState, setImageState] = useState<string>();
+  const [firebaseImageState, setFirebaseImageState] = useState<string>();
   const [jsonResponse, setJsonResponse] = useState();
+
   const TurnOnGallery = async () => {
     await ImagePicker.openPicker({
       width: 300,
       height: 400,
       cropping: true,
     }).then((image) => {
+      console.log('Gallery obj is ', image);
       setImageState(image.path);
+      console.log('image state is : ', imageState);
     });
+
+    const uploadUrl = await uploadImageAsync(imageState);
+    setFirebaseImageState(uploadUrl);
+    submitToGoogle();
   };
 
   const TurnOnCamera = async () => {
@@ -24,15 +33,18 @@ const Scan = () => {
       height: 400,
       cropping: true,
     }).then((image) => {
-      console.log(image);
+      console.log('Camera obj is ', image);
       setImageState(image.path);
+      console.log('image state is : ', imageState);
     });
+    const uploadUrl = await uploadImageAsync(imageState);
+    setFirebaseImageState(uploadUrl);
+    submitToGoogle();
   };
 
   const submitToGoogle = async () => {
     try {
-      let image =
-        'https://i.pinimg.com/originals/9e/6c/9b/9e6c9b3c155e80d609fcf50bf3c0df9f.jpg';
+      let image = firebaseImageState;
       let body = JSON.stringify({
         requests: [
           {
@@ -77,6 +89,28 @@ const Scan = () => {
     }
   };
 
+  const uploadImageAsync = async (imageState) => {
+    const blob = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function (e) {
+        console.log(e);
+        reject(new TypeError('Network request failed'));
+      };
+      xhr.responseType = 'blob';
+      xhr.open('GET', imageState, true);
+      xhr.send(null);
+    });
+
+    const ref = firebase.storage().ref().child(uuidv4());
+    const snapshot = await ref.put(blob);
+
+    blob.close();
+
+    return await snapshot.ref.getDownloadURL();
+  };
   return (
     <View style={styles.parentStyle}>
       <TouchableOpacity onPress={() => TurnOnGallery()}>
@@ -85,14 +119,21 @@ const Scan = () => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => submitToGoogle()}>
+      <TouchableOpacity onPress={() => TurnOnCamera()}>
         <View style={styles.scanButtonStyle}>
           <Text style={styles.scanTextStyle}>Camera</Text>
         </View>
       </TouchableOpacity>
 
       <View style={styles.imageViewStyle}>
-        <Image style={styles.imageStyle} source={{ uri: imageState }} />
+        <Image
+          style={styles.imageStyle}
+          source={{
+            uri: firebaseImageState
+              ? firebaseImageState
+              : 'https://bitsofco.de/content/images/2018/12/broken-1.png',
+          }}
+        />
       </View>
     </View>
   );

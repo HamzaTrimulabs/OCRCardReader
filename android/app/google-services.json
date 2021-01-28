@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "164992318130",
+    "project_id": "ocrreactnativetest",
+    "storage_bucket": "ocrreactnativetest.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164992318130:android:1c75dff569bc70a679e7ab",
+        "android_client_info": {
+          "package_name": "com.ocr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "164992318130-i06d0mjeg0o1c369f4mpcp81vqecpa2k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkG-ig90P7shZQKa8Co0CjwhB-RwdSXS4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164992318130-i06d0mjeg0o1c369f4mpcp81vqecpa2k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
