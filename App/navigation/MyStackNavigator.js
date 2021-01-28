@@ -8,7 +8,6 @@ const MyStackNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name='Scan' component={Scan} />
-      {/* <Stack.Screen name='CameraScanner' component={CameraScanner} /> */}
     </Stack.Navigator>
   );
 };

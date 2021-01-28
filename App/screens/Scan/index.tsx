@@ -16,15 +16,12 @@ const Scan = () => {
       width: 300,
       height: 400,
       cropping: true,
-    }).then((image) => {
-      console.log('Gallery obj is ', image);
+    }).then(async (image) => {
       setImageState(image.path);
-      console.log('image state is : ', imageState);
+      const uploadUrl = await uploadImageAsync(image.path);
+      setFirebaseImageState(uploadUrl);
+      submitToGoogle(uploadUrl);
     });
-
-    const uploadUrl = await uploadImageAsync(imageState);
-    setFirebaseImageState(uploadUrl);
-    submitToGoogle();
   };
 
   const TurnOnCamera = async () => {
@@ -32,19 +29,17 @@ const Scan = () => {
       width: 300,
       height: 400,
       cropping: true,
-    }).then((image) => {
-      console.log('Camera obj is ', image);
+    }).then(async (image) => {
       setImageState(image.path);
-      console.log('image state is : ', imageState);
+      const uploadUrl = await uploadImageAsync(image.path);
+      setFirebaseImageState(uploadUrl);
+      submitToGoogle(uploadUrl);
     });
-    const uploadUrl = await uploadImageAsync(imageState);
-    setFirebaseImageState(uploadUrl);
-    submitToGoogle();
   };
 
-  const submitToGoogle = async () => {
+  const submitToGoogle = async (uploadUrl: string) => {
     try {
-      let image = firebaseImageState;
+      let image = uploadUrl;
       let body = JSON.stringify({
         requests: [
           {
@@ -70,7 +65,6 @@ const Scan = () => {
       });
       let response = await fetch(
         'https://vision.googleapis.com/v1/images:annotate?key=' +
-          // Environment['GOOGLE_CLOUD_VISION_API_KEY'],
           'AIzaSyCSCL4_QrhjQEUE_SeP5rg8gzSMdJg4FNs',
         {
           headers: {
@@ -89,7 +83,7 @@ const Scan = () => {
     }
   };
 
-  const uploadImageAsync = async (imageState) => {
+  const uploadImageAsync = async (imageState: string) => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.onload = function () {
