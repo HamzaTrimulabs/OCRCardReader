@@ -1,6 +1,6 @@
 const Colors = {
   BlueGrey: '#374e70',
-  BluePurple: '#737f91',
+  BackgroundBluePurple: '#737f91',
   DarkGrey: '#636c75',
   White: '#ffff',
   Black: '#000000',

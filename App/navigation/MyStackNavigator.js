@@ -2,6 +2,7 @@ import React from 'react';
 import { Scan } from '../screens';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Colors } from '../constants';
+import { Header } from '../components';
 
 const MyStackNavigator = () => {
   const Stack = createStackNavigator();
@@ -12,6 +13,7 @@ const MyStackNavigator = () => {
         name='Scan'
         component={Scan}
         options={{
+          headerTitle: (props) => <Header title='Scan' {...props} />,
           headerStyle: {
             backgroundColor: Colors.DarkGrey,
           },

@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import firebase from '../../Config/firebase';
 import { v4 as uuidv4 } from 'uuid';
-import FontTelloIcon from '../../components/Fontello';
+import { FontTelloIcon, LoadingSpinner } from '../../components';
 import { Icons, Colors } from '../../constants';
-import { getCardNo } from '../../util';
+import { getCardNo, getName, getDoB } from '../../util';
 import styles from './style';
 
 const Scan = () => {
   const [deleteImage, setDeleteImage] = useState();
-  const [firebaseImageState, setFirebaseImageState] = useState<string>();
-  const [jsonResponse, setJsonResponse] = useState();
-  console.log('json response = ', jsonResponse);
-  useEffect(() => {
-    console.log('json response Effect = ', jsonResponse);
-  }, [jsonResponse]);
+  const [idCard, setIdCard] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [dob, setDob] = useState<string>('');
+  const [loadingState, setLoadingState] = useState<boolean>(false);
+
+  const resetStates = () => {
+    setName('');
+    setDob('');
+    setIdCard('');
+  };
   const deleteData = () => {
     deleteImage?.delete();
   };
@@ -26,7 +30,6 @@ const Scan = () => {
       cropping: false,
     }).then(async (image) => {
       const uploadUrl = await uploadImageAsync(image.path);
-      setFirebaseImageState(uploadUrl);
       submitToGoogle(uploadUrl);
       deleteData();
     });
@@ -39,7 +42,6 @@ const Scan = () => {
       cropping: true,
     }).then(async (image) => {
       const uploadUrl = await uploadImageAsync(image.path);
-      setFirebaseImageState(uploadUrl);
       submitToGoogle(uploadUrl);
       deleteData();
     });
@@ -83,12 +85,25 @@ const Scan = () => {
           body: body,
         }
       );
-      let responseJson = await response.json();
-      console.log('response from google', responseJson.responses);
-      getCardNo(responseJson.responses[0].fullTextAnnotation.text);
-      setJsonResponse(responseJson.responses);
+      const responseJson = await response.json();
+      // console.log('response from google', responseJson.responses);
+
+      const idNum: string = getCardNo(
+        responseJson.responses[0].fullTextAnnotation.text
+      );
+      const idName: string = getName(
+        responseJson.responses[0].fullTextAnnotation.text
+      );
+      const date: string = getDoB(
+        responseJson.responses[0].fullTextAnnotation.text
+      );
+
+      setName(idName);
+      setIdCard(idNum);
+      setDob(date);
+      setLoadingState(false);
     } catch (error) {
-      console.log(error.error);
+      console.log('Error : ', error.error);
     }
   };
 
@@ -117,46 +132,91 @@ const Scan = () => {
     return await snapshot.ref.getDownloadURL();
   };
   return (
-    <View style={styles.parentStyle}>
-      <View style={styles.parentButtonsStyle}>
-        <TouchableOpacity onPress={() => TurnOnGallery()}>
-          <View style={styles.scanButtonStyle}>
-            <FontTelloIcon
-              name={Icons.Picture}
-              color={Colors.Black}
-              size={25}
-            />
-            <Text style={styles.scanTextStyle}>Gallery</Text>
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.parentStyle}>
+        <Text style={[{ ...styles.scanTextStyle }, { ...styles.headingStyle }]}>
+          Select an image to scan!
+        </Text>
+        <View style={styles.parentButtonsStyle}>
+          <TouchableOpacity
+            onPress={() => {
+              resetStates();
+              setLoadingState(true);
+              TurnOnGallery();
+            }}
+          >
+            <View style={styles.scanButtonStyle}>
+              <FontTelloIcon
+                name={Icons.Picture}
+                color={Colors.Black}
+                size={25}
+              />
+              <Text style={styles.scanTextStyle}>Gallery</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              resetStates();
+              setLoadingState(true);
+              TurnOnCamera();
+            }}
+          >
+            <View style={styles.scanButtonStyle}>
+              <FontTelloIcon
+                name={Icons.CameraFilled}
+                color={Colors.Black}
+                size={25}
+              />
+              <Text style={styles.scanTextStyle}>Camera</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {name && idCard && dob ? (
+          <View>
+            <View style={styles.detailInfoStyle}>
+              <Text style={styles.detailTextStyle}>
+                Name : {name ? name : ''}{' '}
+              </Text>
+            </View>
+            <View style={styles.detailInfoStyle}>
+              <Text style={styles.detailTextStyle}>
+                Id card No : {idCard ? idCard : ''}
+              </Text>
+            </View>
+            <View style={styles.detailInfoStyle}>
+              <Text style={styles.detailTextStyle}>
+                Date of birth : {dob ? dob : ''}
+              </Text>
+            </View>
+
+            {/* <View style={styles.imageViewStyle}>
+              <Image
+                style={styles.imageStyle}
+                source={{
+                  uri: firebaseImageState
+                    ? firebaseImageState
+                    : 'https://bitsofco.de/content/images/2018/12/broken-1.png',
+                }}
+              />
+            </View> */}
           </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => TurnOnCamera()}>
-          <View style={styles.scanButtonStyle}>
-            <FontTelloIcon
-              name={Icons.CameraFilled}
-              color={Colors.Black}
-              size={25}
-            />
-            <Text style={styles.scanTextStyle}>Camera</Text>
-          </View>
-        </TouchableOpacity>
+        ) : loadingState ? (
+          <LoadingSpinner />
+        ) : (
+          <Text
+            style={[
+              { ...styles.scanTextStyle },
+              { ...styles.headingStyle },
+              { fontSize: 18 },
+            ]}
+          >
+            Nothing to Show
+          </Text>
+        )}
       </View>
-
-      <View>
-        <Text>Id card No:</Text>
-      </View>
-
-      <View style={styles.imageViewStyle}>
-        <Image
-          style={styles.imageStyle}
-          source={{
-            uri: firebaseImageState
-              ? firebaseImageState
-              : 'https://bitsofco.de/content/images/2018/12/broken-1.png',
-          }}
-        />
-      </View>
-    </View>
+    </ScrollView>
   );
 };
 export default Scan;
