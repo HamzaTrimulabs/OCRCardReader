@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
-import Environment from '../../Config/environment';
 import firebase from '../../Config/firebase';
 import { v4 as uuidv4 } from 'uuid';
 import FontTelloIcon from '../../components/Fontello';
 import { Icons, Colors } from '../../constants';
+import { getCardNo } from '../../util';
 import styles from './style';
 
 const Scan = () => {
   const [deleteImage, setDeleteImage] = useState();
   const [firebaseImageState, setFirebaseImageState] = useState<string>();
   const [jsonResponse, setJsonResponse] = useState();
-
+  console.log('json response = ', jsonResponse);
+  useEffect(() => {
+    console.log('json response Effect = ', jsonResponse);
+  }, [jsonResponse]);
   const deleteData = () => {
     deleteImage?.delete();
   };
@@ -81,7 +84,9 @@ const Scan = () => {
         }
       );
       let responseJson = await response.json();
-      console.log(responseJson);
+      console.log('response from google', responseJson.responses);
+      getCardNo(responseJson.responses[0].fullTextAnnotation.text);
+      setJsonResponse(responseJson.responses);
     } catch (error) {
       console.log(error.error);
     }
@@ -135,6 +140,10 @@ const Scan = () => {
             <Text style={styles.scanTextStyle}>Camera</Text>
           </View>
         </TouchableOpacity>
+      </View>
+
+      <View>
+        <Text>Id card No:</Text>
       </View>
 
       <View style={styles.imageViewStyle}>
